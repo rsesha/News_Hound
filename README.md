@@ -1,6 +1,6 @@
 # Introducing News Search Agent, your Multi-Source News Analysis Agent
 
-A modular Python agent that searches multiple search API's in parallel, intelligently scores and consolidates results, scrapes full article content, and exports everything ready to feed into a multimodal AI model.
+A modular Python agent that searches multiple search API's in parallel, intelligently scores and consolidates results, scrapes full article content, and exports everything ready to feed into a multimodal AI model. It could be a local model or a Gemini model. You just need to set the API key in the .env file or give it the port number and start Ollama or llama.cpp. It will check those ports automatically.
 
 ---
 

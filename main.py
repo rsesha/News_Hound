@@ -1,18 +1,26 @@
 import os
 import re
 import csv
+import logging
+from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from search_engines import google, duckduckgo, brightdata, tavily  # google imported but not in active rotation
+from search_engines import duckduckgo, brightdata, tavily
 from scraper import scrape_and_export
 
 # Load environment variables
 load_dotenv()
 
+# Configure logging - set to logging.INFO for verbose, logging.WARNING for quiet
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(message)s'
+)
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
 # Scoring helpers
 # ---------------------------------------------------------------------------
 
-# Tier 1: Major established news/reference outlets — highest credibility
 TIER_1_DOMAINS = {
     "reuters.com", "apnews.com", "bbc.com", "bbc.co.uk", "nytimes.com",
     "washingtonpost.com", "theguardian.com", "wsj.com", "ft.com",
@@ -20,76 +28,57 @@ TIER_1_DOMAINS = {
     "nbcnews.com", "cbsnews.com", "abcnews.go.com", "cnn.com",
     "foxnews.com", "politico.com", "thehill.com", "axios.com",
     "aljazeera.com", "france24.com", "dw.com", "spiegel.de",
-    "youtube.com", "vimeo.com",  # Primary video content
-    "singjupost.com",            # Known transcript site for this topic
+    "youtube.com", "vimeo.com",
+    "singjupost.com",
     "palestinechronicle.com", "haaretz.com", "timesofisrael.com",
     "pennlive.com", "dailymail.co.uk", "indiatimes.com",
 }
 
-# Tier 2: Known but less authoritative
 TIER_2_DOMAINS = {
     "facebook.com", "twitter.com", "x.com", "instagram.com",
     "reddit.com", "substack.com", "medium.com",
     "en.as.com", "ndtv.com", "theroot.com",
 }
 
-# Recency patterns: URLs with year/month dates signal fresh content
 RECENCY_PATTERNS = [
-    r'/2026/0[1-9]/',   # 2026 articles — very fresh
-    r'/2025/1[0-2]/',   # Late 2025
-    r'/2025/0[7-9]/',   # Mid 2025
+    r'/2026/0[1-9]/',
+    r'/2025/1[0-2]/',
+    r'/2025/0[7-9]/',
     r'2026-0[1-9]-\d{2}',
     r'2025-1[0-2]-\d{2}',
 ]
 
-# Recency signals in snippets ("X days ago", "X hours ago")
 SNIPPET_RECENCY = [
-    (r'\b(\d+)\s+hour[s]?\s+ago\b', 10),    # hours ago = very recent
-    (r'\b(\d+)\s+day[s]?\s+ago\b', 7),      # days ago = recent (decay by count)
+    (r'\b(\d+)\s+hour[s]?\s+ago\b', 10),
+    (r'\b(\d+)\s+day[s]?\s+ago\b', 7),
     (r'\btoday\b', 10),
     (r'\byesterday\b', 8),
 ]
 
-
-def score_result(res):
-    """
-    Composite score for a single result.
-    Components:
-      - source_count: how many engines found it (0-10 pts each)
-      - domain_credibility: tier of the domain (0, 5, or 10 pts)
-      - recency: URL date pattern + snippet age signals (0-10 pts)
-    """
-    url = res.get("link", "").lower()
-    snippet = res.get("snippet", "") or ""
+def score_result(res: Dict[str, Any]) -> int:
+    url = str(res.get("link", "")).lower()
+    snippet = str(res.get("snippet", "") or "")
     sources = res.get("sources", [])
 
-    # --- Source count score ---
-    source_score = len(sources) * 10
-
-    # --- Domain credibility ---
-    domain_score = 0
+    source_score: int = len(sources) * 10
+    domain_score: int = 0
     try:
-        # Extract root domain from URL
         domain = re.sub(r'^https?://(www\.)?', '', url).split('/')[0]
         if any(domain.endswith(d) for d in TIER_1_DOMAINS):
             domain_score = 10
         elif any(domain.endswith(d) for d in TIER_2_DOMAINS):
             domain_score = 5
         else:
-            domain_score = 2  # unknown/obscure
+            domain_score = 2
     except Exception:
         pass
 
-    # --- Recency score ---
-    recency_score = 0
-
-    # Check URL for date patterns
+    recency_score: int = 0
     for pattern in RECENCY_PATTERNS:
         if re.search(pattern, url):
             recency_score = max(recency_score, 8)
             break
 
-    # Check snippet for natural language recency
     snippet_lower = snippet.lower()
     for pattern, base_pts in SNIPPET_RECENCY:
         match = re.search(pattern, snippet_lower)
@@ -99,13 +88,13 @@ def score_result(res):
             elif 'day' in pattern:
                 try:
                     days = int(match.group(1))
-                    pts = max(0, base_pts - days)  # decay: 1 day ago=6pts, 7 days ago=0
+                    pts = max(0, base_pts - days)
                     recency_score = max(recency_score, pts)
                 except (IndexError, ValueError):
                     recency_score = max(recency_score, 3)
             break
 
-    total = source_score + domain_score + recency_score
+    total: int = source_score + domain_score + recency_score
     return total
 
 
@@ -114,16 +103,19 @@ def score_result(res):
 # ---------------------------------------------------------------------------
 
 def safe_print(text, **kwargs):
-    """Safely prints text to handle Windows console encoding issues."""
-    try:
-        print(text, **kwargs)
-    except UnicodeEncodeError:
-        clean_text = text.encode('ascii', 'ignore').decode('ascii')
-        print(clean_text, **kwargs)
+    """Safely handles logging of text messages."""
+    msg = str(text)
+    if len(msg) > 5000:
+        msg = msg[:5000] + "... [TRUNCATED]"
+    
+    if "ERROR" in msg.upper() or "FAILED" in msg.upper():
+        logger.error(msg)
+    else:
+        logger.info(msg)
 
 
-def export_tsv(query: str, all_results: dict, path: str = "search_results.tsv"):
-    """Exports all raw search results to a TSV file (overwrites each run)."""
+def export_tsv(query: str, all_results: Dict[str, List[Dict[str, Any]]], path: str = "search_results.tsv"):
+    """Exports all raw search results to a TSV file."""
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(["query", "engine", "rank", "title", "url", "snippet"])
@@ -137,96 +129,93 @@ def export_tsv(query: str, all_results: dict, path: str = "search_results.tsv"):
                     (r.get("link") or ""),
                     (r.get("snippet") or "").replace("\t", " ").replace("\n", " ")[:300],
                 ])
-    safe_print(f"[Export] Saved {sum(len(v) for v in all_results.values())} rows → '{path}'")
+    
+    logger.info(f"[Export] Saved {sum(len(v) for v in all_results.values())} rows → '{path}'")
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+def run_search_pipeline(query: str, max_results: int = 5, log_callback=None) -> List[Dict[str, Any]]:
+    def log(msg, **kwargs):
+        safe_print(msg, **kwargs)
+        # Only invoke callback if logger level allows for it (e.g. INFO)
+        if logger.isEnabledFor(logging.INFO) and log_callback:
+            try:
+                log_callback(str(msg))
+            except:
+                pass
+
+    try:
+        log(f"\n[Run] Executing Search Quality Test: '{query}'")
+
+        engines = [
+            ("DuckDuckGo", duckduckgo),
+            ("Brightdata", brightdata),
+            ("Tavily", tavily),
+        ]
+
+        all_results: Dict[str, List[Dict[str, Any]]] = {}
+        consolidated_map: Dict[str, Dict[str, Any]] = {}
+
+        for name, engine in engines:
+            log(f"Searching {name}...", end=" ")
+            try:
+                results = engine.search(query, max_results=max_results)
+                all_results[name] = results
+                log(f"Done (Found {len(results)})")
+
+                for res in results:
+                    url = res.get("link")
+                    if url:
+                        norm_url = str(url).lower().rstrip('/')
+                        if norm_url not in consolidated_map:
+                            new_entry = dict(res)
+                            new_entry["sources"] = [name]
+                            consolidated_map[norm_url] = new_entry
+                        else:
+                            sources = consolidated_map[norm_url].get("sources", [])
+                            if name not in sources:
+                                sources.append(name)
+            except Exception as e:
+                log(f"ERROR: {e}")
+
+        consolidated_list = list(consolidated_map.values())
+        for res in consolidated_list:
+            res["_score"] = score_result(res)
+        consolidated_list.sort(key=lambda x: x.get("_score", 0), reverse=True)
+        top_3 = consolidated_list[:3]
+
+        log("\n============================================================")
+        log("Web Research Done")
+        log(f"Gathered {len(consolidated_list)} sources. Related to: {query[:50]}...")
+
+        export_tsv(query, all_results)
+
+        log("\n[Scraper] Starting content extraction...")
+        try:
+            scrape_and_export(query, consolidated_list, output_path="search_text.md")
+            log(f"[Scraper] Successfully exported to search_text.md")
+        except Exception as e:
+            log(f"[Scraper] ERROR: {e}")
+            
+    except Exception as e:
+        import traceback
+        err_msg = f"ERROR IN PIPELINE: {str(e)}\n{traceback.format_exc()}"
+        logger.error(err_msg)
+        # Obey logging level for the UI callback as per user recommendation
+        if logger.isEnabledFor(logging.INFO) and log_callback:
+            log_callback(err_msg)
+        return []
+    
+    log(f"\n[Run] Pipeline finished.")
+    return top_3
+
+
 def main():
     query = "What is the latest from Prof Jiang on Iran War?"
-
-    safe_print(f"\n[Run] Executing Search Quality Test")
-    safe_print(f"Query: '{query}'")
-    safe_print("=" * 60)
-
-    engines = [
-        ("DuckDuckGo", duckduckgo),
-        ("Brightdata", brightdata),
-        ("Tavily", tavily),
-    ]
-
-    all_results = {}
-    consolidated_map = {}
-
-    for name, engine in engines:
-        safe_print(f"SEARCHING {name}...", end=" ", flush=True)
-        try:
-            results = engine.search(query, max_results=5)
-            all_results[name] = results
-            safe_print(f"DONE. Found {len(results)} results.")
-
-            for res in results:
-                url = res.get("link")
-                if url:
-                    norm_url = url.lower().rstrip('/')
-                    if norm_url not in consolidated_map:
-                        consolidated_map[norm_url] = dict(res)
-                        consolidated_map[norm_url]["sources"] = [name]
-                    else:
-                        if name not in consolidated_map[norm_url]["sources"]:
-                            consolidated_map[norm_url]["sources"].append(name)
-        except Exception as e:
-            safe_print(f"ERROR: {e}")
-
-    # --- Results per engine ---
-    safe_print("\n" + "=" * 20 + " RESULTS PER ENGINE " + "=" * 20)
-    for name, results in all_results.items():
-        safe_print(f"\n--- {name.upper()} ---")
-        if not results:
-            safe_print("No results or error.")
-            continue
-        for i, res in enumerate(results, 1):
-            safe_print(f"{i}. {res['title']}")
-            safe_print(f"   URL: {res['link'][:100]}...")
-
-    # --- Consolidated + scored top 3 ---
-    safe_print("\n" + "*" * 10 + " TOP 3 CONSOLIDATED (SCORED) " + "*" * 10)
-    safe_print("   Scoring: Sources(x10) + Domain Credibility(0-10) + Recency(0-10)")
-    safe_print("-" * 60)
-
-    consolidated_list = list(consolidated_map.values())
-
-    # Score and sort
-    for res in consolidated_list:
-        res["_score"] = score_result(res)
-    consolidated_list.sort(key=lambda x: x["_score"], reverse=True)
-
-    top_3 = consolidated_list[:3]
-    if not top_3:
-        safe_print("No results found.")
-    else:
-        for i, res in enumerate(top_3, 1):
-            sources_str = ", ".join(res["sources"])
-            score = res["_score"]
-            snippet = res.get("snippet") or "No snippet available."
-            if len(snippet) > 200:
-                snippet = snippet[:197] + "..."
-            safe_print(f"\n{i}. [{score} pts] {res['title']}")
-            safe_print(f"   URL: {res['link']}")
-            safe_print(f"   Sources: {sources_str}")
-            safe_print(f"   Snippet: {snippet}")
-            safe_print("-" * 60)
-
-    # --- Export TSV ---
-    export_tsv(query, all_results)
-
-    # --- Scrape & export full content to markdown ---
-    # Pass all consolidated results (with scores) for scraping
-    safe_print("\n[Scraper] Starting content extraction...")
-    scrape_and_export(query, consolidated_list, output_path="search_text.md")
-
+    run_search_pipeline(query)
 
 if __name__ == "__main__":
     main()

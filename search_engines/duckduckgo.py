@@ -1,5 +1,18 @@
 from ddgs import DDGS
 import time
+import logging
+
+logger = logging.getLogger(__name__)
+
+def safe_print(text, **kwargs):
+    """Safely handles logging of text messages."""
+    msg = str(text)
+    if "ERROR" in msg.upper() or "FAILED" in msg.upper():
+        logger.error(msg)
+    elif "DEBUG" in msg.upper():
+        logger.debug(msg)
+    else:
+        logger.info(msg)
 
 def search(query, max_results=5):
     """
@@ -9,7 +22,6 @@ def search(query, max_results=5):
     for attempt in range(2):
         try:
             with DDGS() as ddgs:
-                # Use positional argument for query as expected by new version
                 ddgs_gen = ddgs.text(query, max_results=max_results)
                 if ddgs_gen:
                     for r in ddgs_gen:
@@ -26,11 +38,15 @@ def search(query, max_results=5):
                 time.sleep(2)
             continue
     
+    logger.debug(f"DuckDuckGo found {len(results)} results")
     return results
 
 
 if __name__ == "__main__":
     import argparse
+    # Manual config for CLI usage
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
+    
     parser = argparse.ArgumentParser(description="DuckDuckGo Search")
     parser.add_argument("--search", required=True, help="Search query string")
     parser.add_argument("--max", type=int, default=5, help="Max results (default: 5)")

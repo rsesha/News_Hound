@@ -3,14 +3,25 @@ import requests
 import json
 import urllib.parse
 import time
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+
+def safe_print(text, **kwargs):
+    """Safely handles logging of text messages."""
+    msg = str(text)
+    if "ERROR" in msg.upper() or "FAILED" in msg.upper():
+        logger.error(msg)
+    elif "DEBUG" in msg.upper():
+        logger.debug(msg)
+    else:
+        logger.info(msg)
 
 def search(query, max_results=5):
     """
     Performs a search using Bright Data SERP API.
-    Uses the configuration documented in test_api_direct and test_serp.
     """
     api_key = os.getenv("BRIGHTDATA_API_KEY")
     if not api_key:
@@ -18,25 +29,22 @@ def search(query, max_results=5):
 
     results = []
     try:
-        # Properly encode the query for Google Search URL
         encoded_query = urllib.parse.quote(query, safe=':')
         search_url = f"https://www.google.com/search?q={encoded_query}"
         
-        # API endpoint and authentication
         base_url = "https://api.brightdata.com/request"
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
-        # Payload based on provided test scripts
         payload = {
             "zone": "serp_api1",
             "url": search_url,
             "format": "json"
         }
         
-        # Increase timeout to handle slow proxy/serp responses and add retry
+        response = None
         for attempt in range(2):
             try:
                 response = requests.post(base_url, headers=headers, json=payload, timeout=60)
@@ -44,25 +52,23 @@ def search(query, max_results=5):
                     break
             except requests.exceptions.Timeout:
                 if attempt == 0:
-                    print("Brightdata timed out, retrying...")
+                    logger.info("Brightdata timed out, retrying...")
                     time.sleep(2)
                     continue
                 else:
                     raise
         
-        if response.status_code == 200:
+        if response and response.status_code == 200:
             data = response.json()
             body = data.get("body", {})
             
-            # Handle string body
             if isinstance(body, str):
                 try:
                     body = json.loads(body)
                 except json.JSONDecodeError:
-                    print("Failed to parse Brightdata string body as JSON")
+                    logger.error("Failed to parse Brightdata string body as JSON")
                     return []
 
-            # Check for organic results in various possible fields
             organic = body.get("organic_results") or body.get("organic") or body.get("results")
             
             if organic and isinstance(organic, list):
@@ -73,17 +79,19 @@ def search(query, max_results=5):
                         "snippet": r.get("snippet") or r.get("description") or r.get("content"),
                         "source": "Brightdata"
                     })
-        else:
-            print(f"Brightdata API Error: {response.status_code} - {response.text}")
+        elif response:
+            logger.error(f"Brightdata API Error: {response.status_code} - {response.text}")
             
     except Exception as e:
-        print(f"Error searching Brightdata: {e}")
+        logger.error(f"Error searching Brightdata: {e}")
     
     return results
 
 
 if __name__ == "__main__":
     import argparse
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
+    
     parser = argparse.ArgumentParser(description="Brightdata SERP Search")
     parser.add_argument("--search", required=True, help="Search query string")
     parser.add_argument("--max", type=int, default=5, help="Max results (default: 5)")
