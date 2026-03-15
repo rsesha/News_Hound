@@ -150,7 +150,7 @@ def run_search_pipeline(query: str, max_results: int = 5, log_callback=None) -> 
         log(f"\n[Run] Executing Search Quality Test: '{query}'")
 
         engines = [
-            ("Brightdata", brightdata),
+            ("DuckDuckGo", duckduckgo),
             ("Tavily", tavily),
         ]
 

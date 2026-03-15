@@ -18,6 +18,12 @@ Whether using local LLMs via Llama-Swap or Gemini-2.5-Flash, this agent delivers
 
 ---
 
+## 📸 Interface Preview
+
+![News_Summarizer_Agent UI](docs/screenshot.png)
+
+---
+
 ## ✨ Core Features
 
 *   **Smart Query Generation**: Breaks down complex topics into targeted sub-queries.
