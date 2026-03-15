@@ -1,36 +1,35 @@
-# News_Summarizer_Agent: High-Speed AI Research Engine ⚡
+# News_Agent: Three Powerful Search Engines, One Consolidated Result ⚡
 
-News_Summarizer_Agent is a high-performance research tool that orchestrates multiple search APIs in parallel. It intelligently scores, consolidates, and synthesizes information using a "Snippet-First" architecture designed for maximum speed and zero UI noise.
+News_Agent is a high-performance news search agent that orchestrates multiple search APIs to deliver one powerful result. It intelligently scores, consolidates, and synthesizes information similar to "AI Mode" designed for maximum speed and zero hallucination. You can plug this agent into:
 
-Whether using local LLMs via Llama-Swap or Gemini-2.5-Flash, this agent delivers deep research results in a fraction of the time compared to traditional RAG pipelines.
+- RAG Retrieval Pipelines to get accurate summarized information
+- Real world agents that need fast accurate information about products and real time news
 
+This agent summarizes information in the final step using local models or using Gemini models.
 ---
 
 ## 🚀 Key Enhancements (v2.0)
 
 | Feature | Enhancement | Benefit |
 |---|---|---|
-| **Ultra-Fast Search** | Removed slow engines (DDG); Optimized for Brightdata & Tavily. | **5x faster** search execution. |
+| **Ultra-Fast Search** | Removed obstacles that slow down. Optimized for Brightdata, Tavily, and DuckDuckGo. | **5x faster** search execution. |
 | **Snippet Synthesis** | Replaced full-page scraping with high-quality snippet analysis. | Instant answers without scraper hangups. |
-| **Silent UI** | Aggressively filtered milestones (Reflection & Web Research silenced). | Zero-noise, distraction-free research timeline. |
-| **Parallel Execution** | Multi-query generation with simultaneous engine calls. | Comprehensive coverage in a single "swoop". |
-| **Unified Synthesis** | Single final synthesis pass instead of looping summaries. | Highly coherent, cited answers with no redundancy. |
+| **Parallel Execution** | Multi-query generation with simultaneous engine calls. | Comprehensive news and information in a single "call" to this API. |
+| **Pure Synthesis** | Single final synthesis pass instead of looping summaries. | Highly accurate, cited answers with very little or zero hallucination. |
 
 ---
 
 ## 📸 Interface Preview
 
-![News_Summarizer_Agent UI](docs/screenshot.png)
+![News_Agent UI](docs/screenshot.png)
 
 ---
 
 ## ✨ Core Features
 
 *   **Smart Query Generation**: Breaks down complex topics into targeted sub-queries.
-*   **Result Scoring**: Composite ranking based on source count, domain authority (Reuters, BBC, etc.), and recency signals.
-*   **Zero-Config UI**: Modern Vite+React+TS frontend with real-time milestone tracking.
-*   **Flexible Backend**: Pure Python FastAPI backend compatible with any OpenAI-style API (local or cloud).
-*   **Rich TSV Export**: All raw research data saved to `search_results.tsv` for auditability.
+*   **Pick your LLM**: Use local models or Gemini models. If no local model is running the port you specified, it will use Gemini.
+*   **Zero-Config Needed**: No need to configure anything except API keys.
 
 ---
 
@@ -46,7 +45,7 @@ Deep_Search/
 ├── frontend/                # Vite + React + Tailwind UI
 ├── main.py                  # Optimized search pipeline runner
 ├── scraper.py               # (Legacy/Optional) Full content extraction
-└── search_engines/          # Modular engine integrations (Tavily, Brightdata)
+└── search_engines/          # Modular engine integrations (DuckDuckGo, Tavily, Brightdata)
 ```
 
 ---
@@ -65,6 +64,10 @@ Create a `.env` file in the project root:
 GEMINI_API_KEY=your_key
 BRIGHTDATA_API_KEY=your_key
 TAVILY_API_KEY=your_key
+DUCKDUCKGO_API_KEY (LOL it doesn't need an API key!)
+
+# Optional
+LOCAL_MODEL_PORT=8080 (use 8080 if running Llama-Swap and 11434 if running Ollama)
 ```
 
 ### 3. Launch
@@ -84,9 +87,9 @@ Open **`http://localhost:5173/app/`** to start searching.
 
 | Engine | Role | Why it's here |
 |---|---|---|
-| **Brightdata** | Social & Video | Best for primary sources, transcripts, and viral trends. |
-| **Tavily** | Transcripts & Research | Specialized in finding high-density information for LLMs. |
-| **DuckDuckGo** | *Direct* | No API key needed but we use it to avoid rate-limit delays. |
+| **Brightdata** API Key needed | Social & Video | Best for primary sources, transcripts, and viral trends. But it is slow|
+| **Tavily** API Key needed | Transcripts & Research | Specialized in finding high-density information for LLMs. |
+| **DuckDuckGo** No API key needed | *Direct* | No API key needed but we use it to avoid rate-limit delays. |
 
 ---
 
@@ -96,6 +99,7 @@ Each search engine can still be tested individually via CLI:
 ```powershell
 python search_engines/brightdata.py --search "query" --max 3
 python search_engines/tavily.py --search "query" --max 3
+python search_engines/duckduckgo.py --search "query" --max 3
 ```
 
-Raw search logs and scoring metrics are always exported to `search_results.tsv` for manual review.
+Raw search result URLs and scoring metrics are always exported to `search_results.tsv` for manual review.
