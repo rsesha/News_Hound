@@ -4,7 +4,8 @@ News Agent is a high-performance search agent that orchestrates multiple search 
 - RAG Retrieval Pipelines to get accurate summarized information
 - Real world agents that need fast accurate information about products and real time news
 
-This agent summarizes information in the final step using local models or using Gemini models.
+![News_Agent](docs/news_agent.png)
+
 ---
 
 ## 🚀 Key Enhancements (v2.0)
