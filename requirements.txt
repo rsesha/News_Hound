@@ -1,0 +1,6 @@
+requests
+python-dotenv
+ddgs
+google-genai
+tavily-python
+crawlee[beautifulsoup]

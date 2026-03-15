@@ -1,0 +1,48 @@
+# ── API Keys & Secrets ─────────────────────────────────────────────────────
+.env
+.env.*
+
+# ── Generated Search Outputs (overwritten each run) ────────────────────────
+search_results.tsv
+search_text.md
+
+# ── Crawlee internal storage ───────────────────────────────────────────────
+storage/
+
+# ── Python cache ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ───────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Distribution / packaging ───────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ── IDE / editor files ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.swp
+*.swo
+
+# ── OS metadata ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Jupyter / IPython ──────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Debug output ───────────────────────────────────────────────────────────
+google_debug.html
