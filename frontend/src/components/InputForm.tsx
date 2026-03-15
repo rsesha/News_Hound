@@ -20,6 +20,7 @@ interface InputFormProps {
 
 // List of available local LLaMA models - can be customized here
 const LOCAL_MODELS = [
+  { value: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite", color: "text-orange-400" },
   { value: "qwen35-small", label: "Qwen 3.5 Small", color: "text-green-400" },
   { value: "qwen35-9B", label: "Qwen 3.5 9B", color: "text-blue-400" },
   { value: "qwen35-27B", label: "Qwen 3.5 27B", color: "text-purple-400" },
@@ -37,7 +38,7 @@ export const InputForm: React.FC<InputFormProps> = ({
 }) => {
   const [internalInputValue, setInternalInputValue] = useState("");
   const [effort, setEffort] = useState("medium");
-  const [model, setModel] = useState("qwen35-small");
+  const [model, setModel] = useState("gemini-2.5-flash-lite");
 
   const handleInternalSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();

@@ -57,7 +57,7 @@ async def run_research_agent(
     messages: List[Dict[str, Any]],
     initial_search_query_count: int = 3,
     max_research_loops: int = 3,
-    reasoning_model: str = "qwen35-small",
+    reasoning_model: str = "gemini-2.5-flash-lite",
     instructions: Optional[str] = None
 ):
     """
@@ -71,6 +71,7 @@ async def run_research_agent(
     configurable = Configuration() # Default config
     
     # 2. Generate Initial Queries
+    yield {"event": "reflection", "data": {"status": "Analysing request..."}}
     yield {"event": "generate_query", "data": {"search_query": ["Generating queries..."]}}
     
     local_llm = create_local_llm_from_config(config, reasoning_model)
@@ -96,6 +97,7 @@ async def run_research_agent(
     )
     
     logger.debug(f"Generating queries with prompt length: {len(formatted_prompt)}")
+    yield {"event": "reflection", "data": {"status": "Generating specialized search queries..."}}
     loop = asyncio.get_event_loop()
     response = await loop.run_in_executor(
         None,
@@ -119,27 +121,29 @@ async def run_research_agent(
     yield {"event": "generate_query", "data": {"search_query": search_queries}}
     
     # 3. Web Research
+    # 3. Web Research Loop
+    yield {"event": "reflection", "data": {"status": "Starting comprehensive web research across multiple engines..."}}
     sources_gathered = []
     all_web_research_results = []
     
     for query_idx, query in enumerate(search_queries):
         try:
+            yield {"event": "web_research", "data": {"progress": f"Searching for: {query}"}}
             logger.info(f"Starting web research for query: {query}")
             
             loop = asyncio.get_event_loop()
             q = asyncio.Queue()
             
             def sync_log(msg):
-                # UI progress messages - kept minimal and only if logger allows
-                if not logger.isEnabledFor(logging.INFO):
-                    return
-                    
                 msg_str = str(msg)
                 
-                # Filter milestones for the UI to limit verbosity as requested
-                # We only show high-level start/end markers now
+                # Expanded milestones for better UI feedback
                 ui_milestones = [
+                    "Searching",
+                    "Found",
                     "Web Research Done",
+                    "content extraction",
+                    "exported to search_text.md",
                     "Pipeline finished"
                 ]
                 
@@ -220,6 +224,10 @@ async def run_research_agent(
     yield {"event": "finalize_answer", "data": {"status": "Finalizing answer..."}}
     
     summaries_text = "\n\n---\n\n".join(all_web_research_results)
+    # 7. Generate Final Answer
+    yield {"event": "reflection", "data": {"status": "Research complete. Synthesizing final answer..."}}
+    yield {"event": "complete_research", "data": {"status": "Complete"}}
+    
     final_prompt = answer_instructions.format(
         current_date=current_date,
         research_topic=research_topic,

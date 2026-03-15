@@ -59,7 +59,12 @@ export default function App() {
       } else if (event.reflection) {
         processedEvent = {
           title: "Reflection",
-          data: "Analysing Web Research Results",
+          data: event.reflection.status || "Analysing research results...",
+        };
+      } else if (event.complete) {
+        processedEvent = {
+          title: "Research Complete",
+          data: "Final answer has been generated with verified citations.",
         };
       } else if (event.finalize_answer) {
         processedEvent = {

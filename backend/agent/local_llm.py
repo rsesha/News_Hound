@@ -40,17 +40,59 @@ class LocalLLM:
         headers = {"Content-Type": "application/json"}
         
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            print(f"DEBUG: Calling local LLM at {url} (timeout 15s)...")
+            response = requests.post(url, headers=headers, json=payload, timeout=15)
             response.raise_for_status()
+            print(f"DEBUG: Local LLM call successful.")
             return response.json()
         except Exception as e:
-            logger.error(f"Local LLM failed at {url}: {str(e)}")
-            raise Exception(f"Failed to call local LLM: {str(e)}")
+            logger.debug(f"Local LLM failed at {url}: {str(e)}")
+            # Don't raise here, let the caller decide if they want to fallback
+            return {}
+
+    def _call_gemini(self, messages: List[Dict[str, str]], model_name: str) -> str:
+        """Call Gemini API via google-genai."""
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise Exception("GEMINI_API_KEY not found in environment.")
+        
+        try:
+            from google import genai
+            from google.genai import types
+            
+            print(f"DEBUG: Calling Gemini API ({model_name})...")
+            client = genai.Client(api_key=api_key)
+            
+            # Convert messages to Gemini format
+            prompt = ""
+            for msg in messages:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                prompt += f"{role.upper()}: {content}\n"
+            
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    max_output_tokens=self.config.max_tokens,
+                    temperature=self.config.temperature,
+                )
+            )
+            print(f"DEBUG: Gemini API call successful.")
+            return response.text
+        except Exception as e:
+            logger.error(f"Gemini API call failed: {str(e)}")
+            raise Exception(f"Gemini API failed: {str(e)}")
 
     def call(self, messages: List[Dict[str, str]], model_name: Optional[str] = None) -> str:
-        """Call the local LLM with messages."""
+        """Call the LLM with messages, falling back to Gemini if needed."""
         model_to_use = model_name or self.config.model_name
         
+        # If model name implies gemini, use it directly
+        if "gemini" in model_to_use.lower():
+            return self._call_gemini(messages, model_to_use)
+            
+        # Otherwise try local first
         payload = {
             "model": model_to_use,
             "messages": messages,
@@ -59,8 +101,22 @@ class LocalLLM:
             "top_p": self.config.top_p,
         }
         
-        response = self._make_request("/chat/completions", payload)
-        return str(response["choices"][0]["message"]["content"])
+        try:
+            response = self._make_request("/chat/completions", payload)
+            if response and "choices" in response:
+                return str(response["choices"][0]["message"]["content"])
+        except:
+            pass
+            
+        # Fallback to Gemini if local fails and we have a key
+        if os.getenv("GEMINI_API_KEY"):
+            # Use a default gemini model if we were trying a local one
+            fallback_model = "gemini-2.5-flash-lite" # or the one user mentioned
+            if "gemini" not in model_to_use.lower():
+                print(f"DEBUG: Local LLM failed. Falling back to {fallback_model}...")
+                return self._call_gemini(messages, fallback_model)
+        
+        raise Exception("Failed to call both local and Gemini LLMs.")
     
     def call_structured_output(self, messages: List[Dict[str, str]], schema: Any, model_name: Optional[str] = None) -> Any:
         """Call the local LLM with structured output support."""

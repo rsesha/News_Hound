@@ -31,7 +31,10 @@ def safe_print(text, **kwargs):
 # Add the src directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '.'))
 
-from agent.research_agent import run_research_agent
+try:
+    from agent.research_agent import run_research_agent
+except ImportError:
+    from research_agent import run_research_agent
 
 # Define the FastAPI app
 app = FastAPI()
@@ -49,11 +52,11 @@ class QueryRequest(BaseModel):
     messages: List[Dict[str, Any]]
     initial_search_query_count: Optional[int] = 3
     max_research_loops: Optional[int] = 3
-    reasoning_model: Optional[str] = "qwen35-small"
+    reasoning_model: Optional[str] = "gemini-2.5-flash-lite"
     instructions: Optional[str] = None
 
 @app.post("/chat")
-async def chat(request: QueryRequest):
+async def chat(request: QueryRequest, reasoning_model: str = "gemini-2.5-flash-lite"):
     """Process a chat query and stream results"""
     
     async def event_generator():
@@ -67,7 +70,7 @@ async def chat(request: QueryRequest):
                     messages=request.messages,
                     initial_search_query_count=request.initial_search_query_count or 3,
                     max_research_loops=request.max_research_loops or 3,
-                    reasoning_model=request.reasoning_model or "qwen35-small",
+                    reasoning_model=request.reasoning_model or "gemini-1.5-flash",
                     instructions=request.instructions
                 ):
                     await queue.put(event)

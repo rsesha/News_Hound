@@ -140,8 +140,7 @@ def export_tsv(query: str, all_results: Dict[str, List[Dict[str, Any]]], path: s
 def run_search_pipeline(query: str, max_results: int = 5, log_callback=None) -> List[Dict[str, Any]]:
     def log(msg, **kwargs):
         safe_print(msg, **kwargs)
-        # Only invoke callback if logger level allows for it (e.g. INFO)
-        if logger.isEnabledFor(logging.INFO) and log_callback:
+        if log_callback:
             try:
                 log_callback(str(msg))
             except:
