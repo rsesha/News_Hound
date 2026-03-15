@@ -1,6 +1,6 @@
 # ── API Keys & Secrets ─────────────────────────────────────────────────────
 .env
-.env.*
+
 
 # ── Generated Search Outputs (overwritten each run) ────────────────────────
 search_results.tsv
