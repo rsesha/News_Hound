@@ -111,6 +111,7 @@ TAVILY_API_KEY=your_key
 
 # Optional
 LOCAL_MODEL_PORT=8080  # use 8080 if running Llama-Swap, 11434 for Ollama
+LOCAL_MODEL_NAME=qwen-opus
 ```
 
 ### 3. Launch

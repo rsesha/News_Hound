@@ -227,6 +227,26 @@ async def run_research_agent(
             # Replace [1] with [1](URL) for a better UI experience
             markdown_link = f"{source['short_url']}({source['value']})"
             final_answer = final_answer.replace(source["short_url"], markdown_link)
+    
+    # Save the final answer to results.txt
+    try:
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        results_content = f"Research Topic: {research_topic}\n"
+        results_content += f"Generated on: {timestamp}\n"
+        results_content += f"{'='*60}\n\n"
+        results_content += final_answer
+        results_content += f"\n\n{'='*60}\n"
+        results_content += f"Sources ({len(sources_gathered)}):\n"
+        for idx, source in enumerate(sources_gathered, 1):
+            results_content += f"{idx}. {source['label']}\n   {source['value']}\n"
+        
+        results_path = os.path.join(project_root, "results.txt")
+        with open(results_path, "w", encoding="utf-8") as f:
+            f.write(results_content)
+        logger.info(f"Final answer saved to results.txt")
+    except Exception as e:
+        logger.error(f"Failed to save results to file: {e}")
             
     yield {
         "event": "complete", 

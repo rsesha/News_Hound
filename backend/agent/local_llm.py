@@ -14,9 +14,15 @@ from langchain_core.runnables import RunnableConfig
 
 logger = logging.getLogger(__name__)
 
-# Configuration for llama-swap API
-LLAMA_SWAP_BASE_URL = os.getenv("LLAMA_SWAP_BASE_URL", "http://127.0.0.1:8080")
+# Configuration for llama-swap API - now uses LOCAL_MODEL_PORT from .env
+LOCAL_MODEL_PORT = os.getenv("LOCAL_MODEL_PORT", "8080")
+LOCAL_MODEL_NAME = os.getenv("LOCAL_MODEL_NAME", "qwen35-small")
+LOCAL_LLM_TIMEOUT = int(os.getenv("LOCAL_LLM_TIMEOUT", "180"))  # Default 180 seconds (3 minutes)
+USE_GEMINI = os.getenv("USE_GEMINI", "False").lower() in ("true", "1", "yes")  # Force use Gemini for summarization
+LLAMA_SWAP_BASE_URL = os.getenv("LLAMA_SWAP_BASE_URL", f"http://127.0.0.1:{LOCAL_MODEL_PORT}")
 LLAMA_SWAP_API_URL = f"{LLAMA_SWAP_BASE_URL}/v1"
+
+logger.info(f"Local LLM configured: Model={LOCAL_MODEL_NAME}, Port={LOCAL_MODEL_PORT}, Timeout={LOCAL_LLM_TIMEOUT}s, USE_GEMINI={USE_GEMINI}, URL={LLAMA_SWAP_BASE_URL}")
 
 class LocalLLMConfig(BaseModel):
     """Configuration for local LLM models."""
@@ -34,17 +40,23 @@ class LocalLLM:
         self.config = config or LocalLLMConfig()
         self.base_url = LLAMA_SWAP_API_URL
         
-    def _make_request(self, endpoint: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _make_request(self, endpoint: str, payload: Dict[str, Any], timeout: int = None) -> Dict[str, Any]:
         """Make HTTP request to llama-swap API."""
         url = f"{self.base_url}{endpoint}"
         headers = {"Content-Type": "application/json"}
         
+        # Use provided timeout or default from environment
+        actual_timeout = timeout if timeout else LOCAL_LLM_TIMEOUT
+        
         try:
-            print(f"DEBUG: Calling local LLM at {url} (timeout 15s)...")
-            response = requests.post(url, headers=headers, json=payload, timeout=15)
+            print(f"DEBUG: Calling local LLM at {url} (timeout {actual_timeout}s)...")
+            response = requests.post(url, headers=headers, json=payload, timeout=actual_timeout)
             response.raise_for_status()
             print(f"DEBUG: Local LLM call successful.")
             return response.json()
+        except requests.exceptions.Timeout:
+            logger.warning(f"Local LLM request timed out after {actual_timeout}s at {url}")
+            return {}
         except Exception as e:
             logger.debug(f"Local LLM failed at {url}: {str(e)}")
             # Don't raise here, let the caller decide if they want to fallback
@@ -87,6 +99,12 @@ class LocalLLM:
     def call(self, messages: List[Dict[str, str]], model_name: Optional[str] = None) -> str:
         """Call the LLM with messages, falling back to Gemini if needed."""
         model_to_use = model_name or self.config.model_name
+        
+        # If USE_GEMINI is True, always use Gemini for summarization
+        if USE_GEMINI:
+            print(f"DEBUG: USE_GEMINI=True, using Gemini model: {model_to_use if 'gemini' in model_to_use.lower() else 'gemini-2.5-flash-lite'}")
+            gemini_model = model_to_use if "gemini" in model_to_use.lower() else "gemini-2.5-flash-lite"
+            return self._call_gemini(messages, gemini_model)
         
         # If model name implies gemini, use it directly
         if "gemini" in model_to_use.lower():
