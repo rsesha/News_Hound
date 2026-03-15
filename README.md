@@ -104,22 +104,29 @@ cd frontend && npm install
 ### 2. Configure API Keys
 Create a `.env` file in the project root:
 ```env
+# Required API Keys
 GEMINI_API_KEY=your_key
 BRIGHTDATA_API_KEY=your_key
 TAVILY_API_KEY=your_key
 # DuckDuckGo doesn't need an API key!
 
-# Optional
+# LLM Configuration
+USE_GEMINI=False  # Set to True to use Gemini API instead of local LLM
 LOCAL_MODEL_PORT=8080  # use 8080 if running Llama-Swap, 11434 for Ollama
-LOCAL_MODEL_NAME=qwen-opus
+LOCAL_MODEL_NAME=qwen-opus  # Local model name (ignored if USE_GEMINI=True)
+LOCAL_LLM_TIMEOUT=90  # Timeout for local LLM requests in seconds
 ```
 
 ### 3. Launch
 ```bash
-# Start Backend
-python backend/agent/app.py
+# Start Backend (using uv for proper dependency management)
+cd backend
+uv run uvicorn agent.app:app --host 0.0.0.0 --port 2024 --reload
 
-# Start Frontend
+# Or use the Makefile command
+make dev-backend
+
+# Start Frontend (in a separate terminal)
 cd frontend
 npm run dev
 ```
@@ -157,3 +164,12 @@ python search_engines/duckduckgo.py --search "query" --max 3
 ```
 
 Raw search result URLs and scoring metrics are always exported to `search_results.tsv` for manual review.
+
+### Output Files
+
+After each research session, two output files are generated in the project root:
+
+| File | Description |
+|------|-------------|
+| `results.txt` | Final synthesized answer with citations and source links |
+| `search_results.tsv` | Raw search results from all engines (query, engine, rank, title, url, snippet) |

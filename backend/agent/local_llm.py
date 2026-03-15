@@ -14,6 +14,17 @@ from langchain_core.runnables import RunnableConfig
 
 logger = logging.getLogger(__name__)
 
+# Load .env from project root FIRST before reading environment variables
+from dotenv import load_dotenv
+import sys
+import os as os_module
+project_root = os_module.path.abspath(os_module.path.join(os_module.path.dirname(__file__), "../.."))
+dotenv_path = os_module.path.join(project_root, ".env")
+load_dotenv(dotenv_path)
+
+print(f"[INFO] Loaded .env from: {dotenv_path}")
+print(f"[INFO] USE_GEMINI={os_module.getenv('USE_GEMINI', 'NOT_SET')}")
+
 # Configuration for llama-swap API - now uses LOCAL_MODEL_PORT from .env
 LOCAL_MODEL_PORT = os.getenv("LOCAL_MODEL_PORT", "8080")
 LOCAL_MODEL_NAME = os.getenv("LOCAL_MODEL_NAME", "qwen35-small")
@@ -49,10 +60,8 @@ class LocalLLM:
         actual_timeout = timeout if timeout else LOCAL_LLM_TIMEOUT
         
         try:
-            print(f"DEBUG: Calling local LLM at {url} (timeout {actual_timeout}s)...")
             response = requests.post(url, headers=headers, json=payload, timeout=actual_timeout)
             response.raise_for_status()
-            print(f"DEBUG: Local LLM call successful.")
             return response.json()
         except requests.exceptions.Timeout:
             logger.warning(f"Local LLM request timed out after {actual_timeout}s at {url}")
@@ -72,7 +81,6 @@ class LocalLLM:
             from google import genai
             from google.genai import types
             
-            print(f"DEBUG: Calling Gemini API ({model_name})...")
             client = genai.Client(api_key=api_key)
             
             # Convert messages to Gemini format
@@ -90,7 +98,6 @@ class LocalLLM:
                     temperature=self.config.temperature,
                 )
             )
-            print(f"DEBUG: Gemini API call successful.")
             return response.text
         except Exception as e:
             logger.error(f"Gemini API call failed: {str(e)}")
@@ -100,11 +107,15 @@ class LocalLLM:
         """Call the LLM with messages, falling back to Gemini if needed."""
         model_to_use = model_name or self.config.model_name
         
+        print(f"[LLM] call() - USE_GEMINI={USE_GEMINI}, model_to_use={model_to_use}")
+        
         # If USE_GEMINI is True, always use Gemini for summarization
         if USE_GEMINI:
-            print(f"DEBUG: USE_GEMINI=True, using Gemini model: {model_to_use if 'gemini' in model_to_use.lower() else 'gemini-2.5-flash-lite'}")
             gemini_model = model_to_use if "gemini" in model_to_use.lower() else "gemini-2.5-flash-lite"
+            print(f"[LLM] Using Gemini: {gemini_model}")
             return self._call_gemini(messages, gemini_model)
+        
+        print(f"[LLM] Using local LLM at {self.base_url}")
         
         # If model name implies gemini, use it directly
         if "gemini" in model_to_use.lower():
@@ -131,7 +142,6 @@ class LocalLLM:
             # Use a default gemini model if we were trying a local one
             fallback_model = "gemini-2.5-flash-lite" # or the one user mentioned
             if "gemini" not in model_to_use.lower():
-                print(f"DEBUG: Local LLM failed. Falling back to {fallback_model}...")
                 return self._call_gemini(messages, fallback_model)
         
         raise Exception("Failed to call both local and Gemini LLMs.")

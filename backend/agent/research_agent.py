@@ -18,14 +18,16 @@ import requests
 import urllib.parse
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Add project root to path for imports
 import sys
 import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
+
+# Load .env from project root
+dotenv_path = os.path.join(project_root, ".env")
+load_dotenv(dotenv_path)
 
 from main import run_search_pipeline
 

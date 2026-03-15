@@ -9,6 +9,12 @@ from langgraph.types import Send
 from langgraph.graph import StateGraph
 from langgraph.graph import START, END
 from langchain_core.runnables import RunnableConfig
+
+# Load .env from project root FIRST
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+dotenv_path = os.path.join(project_root, ".env")
+load_dotenv(dotenv_path)
+
 from agent.local_llm import LocalLLM, create_local_llm_from_config, convert_messages_to_llama_format
 
 from agent.state import (
@@ -26,13 +32,8 @@ from agent.prompts import (
     answer_instructions,
 )
 from agent.utils import (
-    get_citations,
     get_research_topic,
-    insert_citation_markers,
-    resolve_urls,
 )
-
-load_dotenv()
 
 # Used for Brightdata Search API
 BRIGHTDATA_API_KEY = os.getenv("BRIGHTDATA_API_KEY")
