@@ -104,6 +104,67 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
 
+@app.get("/search")
+async def search(query: str, effort: str = "medium", model: str = "gemini-2.5-flash-lite"):
+    """Simple text search endpoint - returns results as plain text.
+    
+    Args:
+        query: The search query
+        effort: low/medium/high (affects number of research loops and queries)
+        model: The model to use for LLM calls
+    
+    Returns:
+        Plain text response with the synthesized answer
+    """
+    from pydantic import BaseModel
+    
+    class SimpleQueryRequest(BaseModel):
+        messages: list
+        initial_search_query_count: int
+        max_research_loops: int
+        reasoning_model: str
+    
+    # Convert effort to query counts
+    effort_map = {
+        "low": (1, 1),
+        "medium": (3, 3),
+        "high": (5, 10),
+    }
+    initial_queries, max_loops = effort_map.get(effort, (3, 3))
+    
+    # Create the request
+    request = SimpleQueryRequest(
+        messages=[{"type": "human", "content": query, "id": "1"}],
+        initial_search_query_count=initial_queries,
+        max_research_loops=max_loops,
+        reasoning_model=model,
+    )
+    
+    # Run the research agent and collect results
+    result_text = ""
+    final_sources = []
+    
+    async for event in run_research_agent(
+        messages=request.messages,
+        initial_search_query_count=request.initial_search_query_count,
+        max_research_loops=request.max_research_loops,
+        reasoning_model=request.reasoning_model,
+    ):
+        if event.get("event") == "complete":
+            messages = event.get("data", {}).get("messages", [])
+            if messages:
+                result_text = messages[0].get("content", "")
+            final_sources = event.get("data", {}).get("sources_gathered", [])
+        elif event.get("event") == "error":
+            result_text = f"Error: {event.get('data')}"
+    
+    # Format as plain text with sources
+    response_text = f"{result_text}\n\n{'='*60}\nSources:\n"
+    for i, source in enumerate(final_sources, 1):
+        response_text += f"{i}. {source.get('label', 'Source')}\n   {source.get('value', '')}\n"
+    
+    return Response(content=response_text, media_type="text/plain")
+
 def create_frontend_router(build_dir="../frontend/dist"):
     """Creates a router to serve the React frontend."""
     build_path = pathlib.Path(__file__).parent.parent.parent / build_dir

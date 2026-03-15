@@ -173,3 +173,40 @@ After each research session, two output files are generated in the project root:
 |------|-------------|
 | `results.txt` | Final synthesized answer with citations and source links |
 | `search_results.tsv` | Raw search results from all engines (query, engine, rank, title, url, snippet) |
+
+---
+
+## Command Line Usage
+
+You can use the search endpoint directly from the command line without the UI:
+
+### Basic Search Examples
+
+```bash
+# Example 1: Who won the 2022 FIFA World Cup?
+curl "http://localhost:2024/search?query=Who+won+the+World+Cup+in+2022"
+
+# Example 2: What is the capital of France?
+curl "http://localhost:2024/search?query=What+is+the+capital+of+France"
+
+# Example 3: Latest news about artificial intelligence
+curl "http://localhost:2024/search?query=Latest+news+about+artificial+intelligence"
+```
+
+### Advanced Options
+
+```bash
+# With effort levels
+curl "http://localhost:2024/search?query=Who+won+the+World+Cup+in+2022&effort=low"
+curl "http://localhost:2024/search?query=Who+won+the+World+Cup+in+2022&effort=high"
+
+# Using a specific model
+curl "http://localhost:2024/search?query=Who+won+the+World+Cup+in+2022&model=gemini-2.5-flash-lite"
+```
+
+**Parameters:**
+- `query` (required): The search query
+- `effort` (optional): `low`, `medium`, or `high` - affects depth of research
+- `model` (optional): LLM model to use (default: `gemini-2.5-flash-lite`)
+
+**Response:** Plain text with the synthesized answer and source citations.
