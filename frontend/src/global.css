@@ -77,37 +77,24 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.15 0.05 250); /* Deep Blue Background Base */
+  --foreground: oklch(1 0 0); /* White text */
+  --card: oklch(0.2 0.05 250);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.2 0.05 250);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.85 0.2 90); /* Vivid Golden Yellow */
+  --primary-foreground: oklch(0.1 0 0); /* Black text on yellow */
+  --secondary: oklch(0.3 0.1 250); /* Deep Royal Blue */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.25 0.05 250);
+  --muted-foreground: oklch(0.7 0.05 250);
+  --accent: oklch(0.85 0.2 90 / 20%); /* Soft Yellow Tint */
+  --accent-foreground: oklch(0.85 0.2 90);
+  --destructive: oklch(0.7 0.2 25);
+  --border: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.85 0.2 90);
 }
 
 @layer base {
@@ -183,5 +170,39 @@
   background-color: rgb(115 115 115 / 0.2) !important;
 }
 
-/* Ensure your body or html has a dark background if not already set, e.g.: */
-/* body { background-color: #0c0c0d; } */ /* This is similar to neutral-950 */
+/* Premium Design Enhancements */
+.premium-bg {
+  background: linear-gradient(to bottom, #FFD800 0%, #3F51B5 40%, #1a1a1a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-bg::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(255, 216, 0, 0.1) 0%, transparent 60%),
+              radial-gradient(circle at 30% 20%, rgba(63, 81, 181, 0.2) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(255, 216, 0, 0.05) 0%, transparent 40%);
+  animation: mesh-rotate 40s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes mesh-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.chat-container-wide {
+  max-width: 90% !important; /* Extremely wide as requested */
+  width: 100%;
+}
+
+.message-bubble-wide {
+  max-width: 100% !important;
+  width: 100%;
+}

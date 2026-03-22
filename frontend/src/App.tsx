@@ -127,18 +127,22 @@ export default function App() {
           break;
       }
 
-      // Clear the current thread and start fresh with only the new message
+      // Append only the new question to the current history
+      const newMessages = [
+        ...thread.messages,
+        {
+          type: "human",
+          content: submittedInputValue,
+          id: Date.now().toString(),
+        },
+      ];
+
+      // Update thread state to empty so 'submit' can rebuild it without duplication
       thread.updateThread({ messages: [] });
-      
-      // Submit only the current message without previous context
+
+      // Submit the full history to the backend
       thread.submit({
-        messages: [
-          {
-            type: "human",
-            content: submittedInputValue,
-            id: Date.now().toString(),
-          },
-        ],
+        messages: newMessages,
         initial_search_query_count: initial_search_query_count,
         max_research_loops: max_research_loops,
         reasoning_model: model,
@@ -153,8 +157,8 @@ export default function App() {
   }, [thread]);
 
   return (
-    <div className="flex h-screen bg-neutral-800 text-neutral-100 font-sans antialiased">
-      <main className="h-full w-full max-w-4xl mx-auto">
+    <div className="flex h-screen premium-bg text-neutral-100 font-sans antialiased overflow-hidden">
+      <main className="h-full w-full max-w-[95%] mx-auto">
           {thread.messages.length === 0 ? (
             <WelcomeScreen
               handleSubmit={handleSubmit}

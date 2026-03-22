@@ -147,8 +147,9 @@ const HumanMessageBubble: React.FC<HumanMessageBubbleProps> = ({
 }) => {
   return (
     <div
-      className={`text-white rounded-3xl break-words min-h-7 bg-neutral-700 max-w-[100%] sm:max-w-[90%] px-4 pt-3 rounded-br-lg`}
+      className={`text-white rounded-3xl break-words min-h-7 bg-[var(--secondary)]/40 backdrop-blur-md border border-[var(--primary)]/30 max-w-full w-full px-8 py-5 rounded-br-lg shadow-2xl mb-6 relative overflow-hidden`}
     >
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--primary)]/5 blur-3xl -z-10" />
       <ReactMarkdown components={mdComponents}>
         {typeof message.content === "string"
           ? message.content
@@ -187,7 +188,7 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   const isLiveActivityForThisBubble = isLastMessage && isOverallLoading;
 
   return (
-    <div className={`relative break-words flex flex-col`}>
+    <div className={`relative break-words flex flex-col w-full bg-neutral-800/30 backdrop-blur-md p-6 rounded-3xl border border-neutral-700/50 shadow-2xl mb-8`}>
       {activityForThisBubble && activityForThisBubble.length > 0 && (
         <div className="mb-3 border-b border-neutral-700 pb-3 text-xs">
           <ActivityTimeline
@@ -203,9 +204,7 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
       </ReactMarkdown>
       <Button
         variant="default"
-        className={`cursor-pointer bg-neutral-700 border-neutral-600 text-neutral-300 self-end ${
-          message.content.length > 0 ? "visible" : "hidden"
-        }`}
+        className={`cursor-pointer bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-[var(--primary-foreground)] self-end mt-4 shadow-lg transition-all hover:scale-105 active:scale-95`}
         onClick={() =>
           handleCopy(
             typeof message.content === "string"
@@ -215,8 +214,8 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
           )
         }
       >
-        {copiedMessageId === message.id ? "Copied" : "Copy"}
-        {copiedMessageId === message.id ? <CopyCheck /> : <Copy />}
+        {copiedMessageId === message.id ? "Scent Captured" : "Copy Insight"}
+        {copiedMessageId === message.id ? <CopyCheck className="ml-2 w-4 h-4" /> : <Copy className="ml-2 w-4 h-4" />}
       </Button>
     </div>
   );
@@ -253,9 +252,9 @@ export function ChatMessagesView({
     }
   };
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 overflow-y-auto" ref={scrollAreaRef}>
-        <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto pt-16">
+    <div className="flex flex-col h-full w-full">
+      <ScrollArea className="flex-1 overflow-y-auto w-full" ref={scrollAreaRef}>
+        <div className="p-4 md:p-10 space-y-6 w-full max-w-none px-4 md:px-20 pt-20">
           {messages.map((message, index) => {
             const isLast = index === messages.length - 1;
             return (
@@ -292,7 +291,7 @@ export function ChatMessagesView({
               <div className="flex items-start gap-3 mt-3">
                 {" "}
                 {/* AI message row structure */}
-                <div className="relative group max-w-[85%] md:max-w-[80%] rounded-xl p-3 shadow-sm break-words bg-neutral-800 text-neutral-100 rounded-bl-none w-full min-h-[56px]">
+                <div className="relative group max-w-full rounded-3xl p-6 shadow-2xl break-words bg-neutral-800/50 backdrop-blur-sm text-neutral-100 rounded-bl-none w-full min-h-[80px] border border-neutral-700/50">
                   {liveActivityEvents.length > 0 ? (
                     <div className="text-xs">
                       <ActivityTimeline

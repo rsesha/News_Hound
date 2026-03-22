@@ -15,13 +15,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onCancel,
   isLoading,
 }) => (
-  <div className="h-full flex flex-col items-center justify-center text-center px-4 flex-1 w-full max-w-3xl mx-auto gap-4">
+  <div className="h-full flex flex-col items-center justify-center text-center px-4 flex-1 w-full max-w-5xl mx-auto gap-4">
     <div>
-      <h1 className="text-5xl md:text-6xl font-semibold text-neutral-100 mb-3">
-        Welcome.
+      <div className="flex justify-center mb-6 animate-fadeIn">
+        <img 
+          src="news_hound_logo.png" 
+          alt="News Hound Logo" 
+          className="w-full max-w-3xl h-auto drop-shadow-[0_0_30px_rgba(255,216,0,0.4)] rounded-2xl" 
+        />
+      </div>
+      <h1 className="text-6xl md:text-8xl font-black text-neutral-100 mb-4 tracking-tighter uppercase italic">
+        News <span className="text-[var(--primary)]">Hound</span>
       </h1>
-      <p className="text-xl md:text-2xl text-neutral-400">
-        How can I help you today?
+      <p className="text-2xl md:text-3xl text-neutral-100 font-bold max-w-4xl mx-auto leading-relaxed drop-shadow-sm italic">
+        One search. One retrieval. <span className="text-[var(--primary)] uppercase">Stop searching, start acting.</span>
       </p>
     </div>
     <div className="w-full mt-4">
