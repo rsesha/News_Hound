@@ -53,6 +53,8 @@ News_Agent/
 
 ## How It Works
 
+![News Agent Workflow](docs/agent.png)
+
 1. **Query Generation**: LLM breaks down user question into 3 targeted sub-queries
 2. **Parallel Search**: All 3 search engines execute simultaneously on each query
 3. **Snippet Synthesis**: High-quality snippets extracted (not full-page scraping for speed)
@@ -62,7 +64,7 @@ News_Agent/
 
 ## Interface Preview
 
-![News Agent UI](docs/screenshot.png)
+![News Agent UI](docs/app.png)
 
 ---
 
@@ -102,12 +104,16 @@ cd frontend && npm install
 ```
 
 ### 2. Configure API Keys
-Create a `.env` file in the project root:
+Copy the example environment file and fill in your keys:
+```bash
+cp .env.example .env
+```
+Open **`.env`** and add your credentials:
 ```env
-# Required API Keys
 GEMINI_API_KEY=your_key
 BRIGHTDATA_API_KEY=your_key
 TAVILY_API_KEY=your_key
+```
 # DuckDuckGo doesn't need an API key!
 
 # LLM Configuration

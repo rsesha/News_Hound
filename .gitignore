@@ -1,5 +1,6 @@
 # ── API Keys & Secrets ─────────────────────────────────────────────────────
 .env
+!.env.example
 
 
 # ── Generated Search Outputs (overwritten each run) ────────────────────────
