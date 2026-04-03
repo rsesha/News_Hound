@@ -1,0 +1,278 @@
+{
+    "tier_1": [
+        {
+            "name": "Reuters",
+            "url": "reuters.com"
+        },
+        {
+            "name": "Associated Press (AP)",
+            "url": "apnews.com"
+        },
+        {
+            "name": "BBC News",
+            "url": "bbc.com"
+        },
+        {
+            "name": "BBC.co.uk",
+            "url": "bbc.co.uk"
+        },
+        {
+            "name": "The New York Times",
+            "url": "nytimes.com"
+        },
+        {
+            "name": "The Washington Post",
+            "url": "washingtonpost.com"
+        },
+        {
+            "name": "The Guardian",
+            "url": "theguardian.com"
+        },
+        {
+            "name": "The Wall Street Journal",
+            "url": "wsj.com"
+        },
+        {
+            "name": "Financial Times",
+            "url": "ft.com"
+        },
+        {
+            "name": "Bloomberg",
+            "url": "bloomberg.com"
+        },
+        {
+            "name": "The Economist",
+            "url": "economist.com"
+        },
+        {
+            "name": "Time",
+            "url": "time.com"
+        },
+        {
+            "name": "Newsweek",
+            "url": "newsweek.com"
+        },
+        {
+            "name": "Politico",
+            "url": "politico.com"
+        },
+        {
+            "name": "The Hill",
+            "url": "thehill.com"
+        },
+        {
+            "name": "Axios",
+            "url": "axios.com"
+        },
+        {
+            "name": "CNN",
+            "url": "cnn.com"
+        },
+        {
+            "name": "CNBC",
+            "url": "cnbc.com"
+        },
+        {
+            "name": "Al Jazeera",
+            "url": "aljazeera.com"
+        },
+        {
+            "name": "France 24",
+            "url": "france24.com"
+        },
+        {
+            "name": "Deutsche Welle (DW)",
+            "url": "dw.com"
+        },
+        {
+            "name": "Der Spiegel",
+            "url": "spiegel.de"
+        },
+        {
+            "name": "Bild",
+            "url": "bild.de"
+        },
+        {
+            "name": "n-tv",
+            "url": "n-tv.de"
+        },
+        {
+            "name": "T-Online",
+            "url": "t-online.de"
+        },
+        {
+            "name": "Daily Mail / MailOnline",
+            "url": "dailymail.co.uk"
+        },
+        {
+            "name": "Haaretz",
+            "url": "haaretz.com"
+        },
+        {
+            "name": "The Times of Israel",
+            "url": "timesofisrael.com"
+        },
+        {
+            "name": "Palestine Chronicle",
+            "url": "palestinechronicle.com"
+        },
+        {
+            "name": "Yahoo News",
+            "url": "news.yahoo.com"
+        },
+        {
+            "name": "Yahoo Finance",
+            "url": "finance.yahoo.com"
+        },
+        {
+            "name": "MSN News",
+            "url": "msn.com"
+        },
+        {
+            "name": "Google News",
+            "url": "news.google.com"
+        },
+        {
+            "name": "USA Today",
+            "url": "usatoday.com"
+        },
+        {
+            "name": "The New York Post",
+            "url": "nypost.com"
+        },
+        {
+            "name": "CBC News",
+            "url": "cbc.ca"
+        },
+        {
+            "name": "The Times of India / Indiatimes",
+            "url": "indiatimes.com"
+        },
+        {
+            "name": "Economic Times",
+            "url": "economictimes.indiatimes.com"
+        },
+        {
+            "name": "NDTV",
+            "url": "ndtv.com"
+        },
+        {
+            "name": "Hindustan Times",
+            "url": "hindustantimes.com"
+        },
+        {
+            "name": "India Today",
+            "url": "indiatoday.in"
+        },
+        {
+            "name": "Corriere della Sera",
+            "url": "corriere.it"
+        },
+        {
+            "name": "El País",
+            "url": "elpais.com"
+        },
+        {
+            "name": "Marca",
+            "url": "marca.com"
+        },
+        {
+            "name": "As.com",
+            "url": "en.as.com"
+        },
+        {
+            "name": "Wirtualna Polska (WP)",
+            "url": "wp.pl"
+        },
+        {
+            "name": "Nikkei",
+            "url": "nikkei.com"
+        },
+        {
+            "name": "Yahoo Japan",
+            "url": "yahoo.co.jp"
+        },
+        {
+            "name": "Globo",
+            "url": "g1.globo.com"
+        },
+        {
+            "name": "UOL",
+            "url": "uol.com.br"
+        },
+        {
+            "name": "Infobae",
+            "url": "infobae.com"
+        },
+        {
+            "name": "detikcom",
+            "url": "detik.com"
+        },
+        {
+            "name": "RBC",
+            "url": "rbc.ru"
+        },
+        {
+            "name": "Netease (163.com)",
+            "url": "163.com"
+        },
+        {
+            "name": "Penn Live",
+            "url": "pennlive.com"
+        },
+        {
+            "name": "Singjupost",
+            "url": "singjupost.com"
+        }
+    ],
+    "tier_2": [
+        {
+            "name": "NBC News",
+            "url": "nbcnews.com"
+        },
+        {
+            "name": "CBS News",
+            "url": "cbsnews.com"
+        },
+        {
+            "name": "ABC News",
+            "url": "abcnews.go.com"
+        },
+        {
+            "name": "Fox News",
+            "url": "foxnews.com"
+        },
+        {
+            "name": "Facebook",
+            "url": "facebook.com"
+        },
+        {
+            "name": "Twitter / X",
+            "url": "twitter.com"
+        },
+        {
+            "name": "X (formerly Twitter)",
+            "url": "x.com"
+        },
+        {
+            "name": "Instagram",
+            "url": "instagram.com"
+        },
+        {
+            "name": "Reddit",
+            "url": "reddit.com"
+        },
+        {
+            "name": "Substack",
+            "url": "substack.com"
+        },
+        {
+            "name": "Medium",
+            "url": "medium.com"
+        },
+        {
+            "name": "The Root",
+            "url": "theroot.com"
+        }
+    ]
+}

@@ -1,7 +1,9 @@
 import os
 import re
 import csv
+import json
 import logging
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from search_engines import duckduckgo, brightdata, tavily
@@ -21,24 +23,26 @@ logger = logging.getLogger(__name__)
 # Scoring helpers
 # ---------------------------------------------------------------------------
 
-TIER_1_DOMAINS = {
-    "reuters.com", "apnews.com", "bbc.com", "bbc.co.uk", "nytimes.com",
-    "washingtonpost.com", "theguardian.com", "wsj.com", "ft.com",
-    "bloomberg.com", "economist.com", "time.com", "newsweek.com",
-    "nbcnews.com", "cbsnews.com", "abcnews.go.com", "cnn.com",
-    "foxnews.com", "politico.com", "thehill.com", "axios.com",
-    "aljazeera.com", "france24.com", "dw.com", "spiegel.de",
-    "youtube.com", "vimeo.com",
-    "singjupost.com",
-    "palestinechronicle.com", "haaretz.com", "timesofisrael.com",
-    "pennlive.com", "dailymail.co.uk", "indiatimes.com",
-}
+def _load_priority_sites() -> tuple[set, set]:
+    """Load TIER_1 and TIER_2 domain sets from priority_sites.json."""
+    json_path = Path(__file__).parent / "priority_sites.json"
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        tier_1 = {entry["url"] for entry in data.get("tier_1", [])}
+        tier_2 = {entry["url"] for entry in data.get("tier_2", [])}
+        logging.getLogger(__name__).info(
+            f"[Config] Loaded {len(tier_1)} tier-1 and {len(tier_2)} tier-2 domains "
+            f"from {json_path.name}"
+        )
+        return tier_1, tier_2
+    except Exception as e:
+        logging.getLogger(__name__).error(
+            f"[Config] Could not load priority_sites.json: {e}. Falling back to empty sets."
+        )
+        return set(), set()
 
-TIER_2_DOMAINS = {
-    "facebook.com", "twitter.com", "x.com", "instagram.com",
-    "reddit.com", "substack.com", "medium.com",
-    "en.as.com", "ndtv.com", "theroot.com",
-}
+TIER_1_DOMAINS, TIER_2_DOMAINS = _load_priority_sites()
 
 RECENCY_PATTERNS = [
     r'/2026/0[1-9]/',
